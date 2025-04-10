@@ -4,7 +4,7 @@ import csv
 import matplotlib.pyplot as plt
 
 def main():
-    video_path = "/Users/bartlomiejostasz/Downloads/IMG_2443.mov"
+    video_path = "/Users/bartlomiejostasz/Downloads/IMG_3111.mov"
 
     # --(1) Sprawdzenie, czy plik wideo jest dostępny w trybie binarnym--
     try:
