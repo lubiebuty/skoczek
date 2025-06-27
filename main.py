@@ -42,27 +42,21 @@ def main():
         return
 
     # Próba automatycznego wykrycia szachownicy
-    pattern_size = (3, 3)  # liczba narożników (w poziomie i pionie)
-    square_size = 0.04     # rozmiar boku jednego kwadratu (w metrach)
-
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    found, corners = cv2.findChessboardCorners(
-        gray,
-        pattern_size,
-        cv2.CALIB_CB_ADAPTIVE_THRESH + cv2.CALIB_CB_NORMALIZE_IMAGE + cv2.CALIB_CB_FAST_CHECK
-    )
+    template = cv2.imread("checkerboard_template.png", 0)
+    template_w, template_h = template.shape[::-1]
 
-    if found:
-        # Doprecyzowanie narożników
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 30, 0.001)
-        corners_refined = cv2.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
+    # Match template in the grayscale first frame
+    res = cv2.matchTemplate(gray, template, cv2.TM_CCOEFF_NORMED)
+    threshold = 0.8
+    min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(res)
 
-        # Obliczenie prostokątnego obszaru otaczającego narożniki (ROI)
-        x, y, w, h = cv2.boundingRect(corners_refined)
-        bbox = (x, y, w, h)
-        print("Automatyczne wykrywanie szachownicy powiodło się.")
+    if max_val >= threshold:
+        top_left = max_loc
+        bbox = (top_left[0], top_left[1], template_w, template_h)
+        print("Automatyczne wykrycie szachownicy (template matching) powiodło się.")
     else:
-        print("Automatyczne wykrywanie szachownicy nie powiodło się.")
+        print("Nie wykryto szachownicy przez template matching.")
         print("Zaznacz obszar (ROI) do śledzenia ręcznie, a następnie naciśnij ENTER lub SPACJĘ.")
         bbox = cv2.selectROI("Wybierz ROI do śledzenia", frame, False)
         cv2.destroyWindow("Wybierz ROI do śledzenia")
@@ -137,6 +131,8 @@ def main():
 
     # --(8) Tworzenie wykresów--
     draw_wykres(positions)
+
+    exit(0)
 
 if __name__ == "__main__":
     main()
